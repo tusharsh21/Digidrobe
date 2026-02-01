@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile-app-boilerplate",
-    "slug": "mobile-app-boilerplate",
+    "name": "Digidrobe",
+    "slug": "digidrobe",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
