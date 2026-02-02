@@ -15,6 +15,7 @@ export const AddImageScreen = () => {
     const [images, setImages] = useState<string[]>([]);
     const [name, setName] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
     const { addItem } = useAppContext();
     const navigation = useNavigation();
 
@@ -24,8 +25,14 @@ export const AddImageScreen = () => {
             return;
         }
 
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to make this work!');
+            return;
+        }
+
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsMultipleSelection: true,
             selectionLimit: 4 - images.length,
             quality: 0.8,
@@ -37,7 +44,7 @@ export const AddImageScreen = () => {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (images.length === 0) {
             Alert.alert('Error', 'Please add at least one image.');
             return;
@@ -51,13 +58,20 @@ export const AddImageScreen = () => {
             return;
         }
 
-        addItem({
-            uri: images[0],
-            name: name,
-            category: selectedCategory,
-        });
-
-        navigation.goBack();
+        try {
+            setIsSaving(true);
+            await addItem({
+                uri: images[0],
+                name: name,
+                category: selectedCategory,
+            });
+            navigation.goBack();
+        } catch (error: any) {
+            const msg = error?.message || String(error);
+            Alert.alert('Error', `Failed to save items: ${msg}`);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -136,10 +150,10 @@ export const AddImageScreen = () => {
                     {/* Action Buttons */}
                     <View style={styles.actionButtons}>
                         <Button
-                            title="Save Items"
+                            title={isSaving ? "Saving..." : "Save Items"}
                             onPress={handleSave}
-                            disabled={images.length === 0 || !name || !selectedCategory}
-                            style={[styles.saveButton, (images.length === 0 || !name || !selectedCategory) && styles.disabledButton]}
+                            disabled={images.length === 0 || !name || !selectedCategory || isSaving}
+                            style={[styles.saveButton, (images.length === 0 || !name || !selectedCategory || isSaving) && styles.disabledButton]}
                         />
                         <Button
                             title="Cancel"
@@ -277,10 +291,9 @@ const styles = StyleSheet.create({
     },
     saveButton: {
         height: 52,
-        backgroundColor: '#8E8E93', // Matches the greyed button in screenshot 3
     },
     disabledButton: {
-        backgroundColor: '#D1D1D6',
+        opacity: 0.5,
     },
     cancelButton: {
         height: 52,

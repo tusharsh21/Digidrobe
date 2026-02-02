@@ -12,9 +12,12 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = (width - Spacing.l * 3) / 2;
 
+const CATEGORIES_FILTER: (Category | 'All')[] = ['All', 'Upper Wear', 'Bottom Wear', 'Shoe', 'Accessory'];
+
 export const HomeScreen = () => {
-    const { items } = useAppContext();
+    const { items, isLoading } = useAppContext();
     const navigation = useNavigation<StackNavigationProp<any>>();
+    const [selectedFilter, setSelectedFilter] = useState<Category | 'All'>('All');
     const [selectionMode, setSelectionMode] = useState(false);
     const [selectedOutfit, setSelectedOutfit] = useState<{ [key: string]: UploadedItem | null }>({
         'Upper Wear': null,
@@ -23,6 +26,11 @@ export const HomeScreen = () => {
     });
 
     const isOutfitReady = selectedOutfit['Upper Wear'] || selectedOutfit['Bottom Wear'] || selectedOutfit['Shoe'];
+
+    const filteredItems = useMemo(() => {
+        if (selectedFilter === 'All') return items;
+        return items.filter(item => item.category === selectedFilter);
+    }, [items, selectedFilter]);
 
     const handleItemPress = (item: UploadedItem) => {
         if (!selectionMode) return;
@@ -84,10 +92,43 @@ export const HomeScreen = () => {
                 )}
             </View>
 
+            {/* Category Filter */}
+            {!selectionMode && (
+                <View style={styles.filterBar}>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.filterScroll}
+                    >
+                        {CATEGORIES_FILTER.map((cat) => (
+                            <TouchableOpacity
+                                key={cat}
+                                style={[
+                                    styles.filterChip,
+                                    selectedFilter === cat && styles.selectedFilterChip
+                                ]}
+                                onPress={() => setSelectedFilter(cat)}
+                            >
+                                <Text style={[
+                                    styles.filterText,
+                                    selectedFilter === cat && styles.selectedFilterText
+                                ]}>
+                                    {cat.replace(' Wear', '')}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
+            )}
+
             {/* Grid Content */}
-            {items.length > 0 ? (
+            {isLoading ? (
+                <View style={styles.emptyContainer}>
+                    <Text style={[Typography.body, { color: '#999' }]}>Loading your wardrobe...</Text>
+                </View>
+            ) : filteredItems.length > 0 ? (
                 <FlatList
-                    data={items}
+                    data={filteredItems}
                     renderItem={renderProductCard}
                     keyExtractor={(item) => item.id}
                     numColumns={2}
@@ -98,7 +139,9 @@ export const HomeScreen = () => {
             ) : (
                 <View style={styles.emptyContainer}>
                     <MaterialCommunityIcons name="tshirt-crew-outline" size={80} color="#DDD" />
-                    <Text style={[Typography.subheader, { marginTop: Spacing.m, color: '#999' }]}>No items yet</Text>
+                    <Text style={[Typography.subheader, { marginTop: Spacing.m, color: '#999' }]}>
+                        {selectedFilter === 'All' ? 'No items yet' : `No ${selectedFilter} items`}
+                    </Text>
                 </View>
             )}
 
@@ -159,6 +202,36 @@ const styles = StyleSheet.create({
     },
     headerAddButton: {
         paddingLeft: Spacing.m,
+    },
+    filterBar: {
+        paddingVertical: Spacing.m,
+        backgroundColor: Colors.background,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
+    },
+    filterScroll: {
+        paddingHorizontal: Spacing.l,
+        gap: Spacing.s,
+    },
+    filterChip: {
+        paddingHorizontal: Spacing.m,
+        paddingVertical: Spacing.s,
+        borderRadius: 20,
+        backgroundColor: '#F5F5F5',
+        borderWidth: 1,
+        borderColor: '#EEE',
+    },
+    selectedFilterChip: {
+        backgroundColor: Colors.primary,
+        borderColor: Colors.primary,
+    },
+    filterText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#666',
+    },
+    selectedFilterText: {
+        color: '#FFF',
     },
     gridContainer: {
         paddingHorizontal: Spacing.l,

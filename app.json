@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Digidrobe",
+    "name": "DigiDrobe",
     "slug": "digidrobe",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,6 +24,15 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.mobileappboilerplate"
     },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you add clothing items to your wardrobe.",
+          "cameraPermission": "The app accesses your camera to let you take photos of your clothing items."
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     }
