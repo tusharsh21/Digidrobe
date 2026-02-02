@@ -83,37 +83,32 @@ export const AnimatedSplashScreen: React.FC<AnimatedSplashScreenProps> = ({ chil
         });
     };
 
-    if (animationComplete) {
-        return <>{children}</>;
-    }
-
     return (
         <View style={styles.container}>
-            {/* Actual App Content is hidden behind the splash via animationComplete state */}
-            <View style={StyleSheet.absoluteFill}>
-                {children}
-            </View>
+            {children}
 
-            <Animated.View style={[styles.splashContainer, { opacity: containerOpacity }]}>
-                <Animated.Image
-                    source={require('../../assets/icon.png')}
-                    style={[
-                        styles.logo,
-                        {
-                            transform: [{ scale: logoScale }],
-                            opacity: logoOpacity,
-                        },
-                    ]}
-                    resizeMode="contain"
-                />
-                <Animated.View style={{
-                    opacity: taglineOpacity,
-                    transform: [{ translateY: taglineTranslateY }],
-                    alignItems: 'center'
-                }}>
-                    <Text style={styles.tagline}>A digital Wardrobe</Text>
+            {!animationComplete && (
+                <Animated.View style={[styles.splashContainer, { opacity: containerOpacity }]}>
+                    <Animated.Image
+                        source={require('../../assets/icon.png')}
+                        style={[
+                            styles.logo,
+                            {
+                                transform: [{ scale: logoScale }],
+                                opacity: logoOpacity,
+                            },
+                        ]}
+                        resizeMode="contain"
+                    />
+                    <Animated.View style={{
+                        opacity: taglineOpacity,
+                        transform: [{ translateY: taglineTranslateY }],
+                        alignItems: 'center'
+                    }}>
+                        <Text style={styles.tagline}>A digital Wardrobe</Text>
+                    </Animated.View>
                 </Animated.View>
-            </Animated.View>
+            )}
         </View>
     );
 };
